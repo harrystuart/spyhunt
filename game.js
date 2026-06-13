@@ -1,4 +1,4 @@
-const LOCATIONS = [
+export const LOCATIONS = [
   "Airport",
   "Bank",
   "Beach",
@@ -37,6 +37,12 @@ export function createGame(players) {
     currentQuestionerId: firstQuestioner.id,
     currentAnswererId: null,
     previousQuestionerId: null,
+    beliefUpdate: null,
+    beliefUpdates: [],
+    accuserIds: [],
+    accusation: null,
+    accusations: [],
+    result: null,
     startedAt: new Date().toISOString()
   };
 }
