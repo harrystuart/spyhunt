@@ -34,6 +34,7 @@ const chatMessageInput = document.querySelector("#chat-message");
 const sendChatMessageButton = document.querySelector("#send-chat-message");
 
 const statusText = document.querySelector("#status");
+const roomIdBadge = document.querySelector("#room-id-badge");
 
 let lobbyWaitingText = document.querySelector("#lobby-waiting-text");
 
@@ -490,6 +491,7 @@ function showEntry() {
   lobbyWaitingText.hidden = true;
   closeGuessConfirmation();
   renderGameTimer();
+  renderRoomIdBadge();
 }
 
 function showLobby() {
@@ -503,6 +505,7 @@ function showLobby() {
   leaveRoomButton.disabled = false;
   closeGuessConfirmation();
   renderGameTimer();
+  renderRoomIdBadge();
 }
 
 function showGame() {
@@ -510,6 +513,7 @@ function showGame() {
   lobbyScreen.classList.add("is-hidden");
   gameScreen.classList.remove("is-hidden");
   lobbyWaitingText.hidden = true;
+  renderRoomIdBadge();
 }
 
 function renderLobby(room) {
@@ -1689,4 +1693,13 @@ function getVoteProgress(room, voteState) {
     submittedCount: Math.max(0, totalCount - pendingCount),
     totalCount
   };
+}
+
+function renderRoomIdBadge() {
+  if (!roomIdBadge) {
+    return;
+  }
+
+  roomIdBadge.hidden = false;
+  roomIdBadge.textContent = `Room ${latestRoom.id}`;
 }

@@ -994,3 +994,22 @@ select:disabled {
   content: "Error: ";
   font-weight: 800;
 }
+
+.room-id-badge {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 70;
+  margin: 0;
+  padding: 8px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card-strong);
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 12px 34px rgba(15, 23, 42, 0.14);
+  backdrop-filter: blur(10px);
+}

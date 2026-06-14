@@ -1889,6 +1889,7 @@ function publicRoom(room) {
   }
 
   return {
+    id: room.id,
     status: room.status,
     turn,
     beliefUpdate,
