@@ -52,6 +52,7 @@ let currentRoomCode = null;
 let latestRoom = null;
 let assignedRoleText = "Waiting for role.";
 let assignedRoleKind = null;
+let assignedLocation = null;
 let normalAccusationUsed = false;
 let pendingAccusationName = null;
 let pendingBeliefUpdateKey = null;
@@ -289,6 +290,7 @@ socket.on("room_updated", room => {
 
 socket.on("role_assigned", ({ role, location }) => {
   assignedRoleKind = role;
+  assignedLocation = role === "spy" ? null : location;
 
   if (role === "spy") {
     assignedRoleText = "You are the Spy.";
@@ -745,7 +747,7 @@ function renderGamePlayers(room) {
 
     if (!isCurrentUser(player.name)) {
       const tooltip = document.createElement("span");
-      tooltip.className = "tooltip-wrap";
+      tooltip.className = "tooltip-wrap player-action-slot";
       tooltip.dataset.tooltip = `Do you want to accuse ${player.name} of being the spy?`;
 
       const accuseButton = document.createElement("button");
@@ -905,32 +907,43 @@ function renderLocations(room) {
   locationsList.innerHTML = "";
 
   for (const location of room.locations) {
+    const isOwnAgentLocation =
+      assignedRoleKind !== "spy" &&
+      assignedLocation &&
+      namesMatch(location, assignedLocation);
+
     const item = document.createElement("li");
-    item.className = assignedRoleKind === "spy" ? "location-row" : "";
+    item.className = "location-row";
+
+    if (isOwnAgentLocation) {
+      item.classList.add("is-own-location");
+    }
 
     const name = document.createElement("span");
     name.className = "location-name-line";
     name.textContent = location;
     item.appendChild(name);
 
-    if (assignedRoleKind === "spy") {
-      const tooltip = document.createElement("span");
-      tooltip.className = "tooltip-wrap";
-      tooltip.dataset.tooltip = `Do you want to guess that ${location} is the hidden location?`;
+    const tooltip = document.createElement("span");
+    tooltip.className = "tooltip-wrap location-action-slot";
+    tooltip.dataset.tooltip = `Do you want to guess that ${location} is the hidden location?`;
 
-      const guessButton = document.createElement("button");
-      guessButton.type = "button";
-      guessButton.className = "guess-button";
-      guessButton.dataset.location = location;
-      guessButton.disabled = !canGuessLocation(room);
+    const guessButton = document.createElement("button");
+    guessButton.type = "button";
+    guessButton.className = "guess-button";
+    guessButton.dataset.location = location;
+    guessButton.disabled = !canGuessLocation(room);
 
-      const icon = document.createElement("span");
-      icon.className = "material-symbols-rounded";
-      icon.textContent = "point_scan";
+    const icon = document.createElement("span");
+    icon.className = "material-symbols-rounded";
+    icon.textContent = "point_scan";
 
-      guessButton.appendChild(icon);
-      tooltip.appendChild(guessButton);
-      item.appendChild(tooltip);
+    guessButton.appendChild(icon);
+    tooltip.appendChild(guessButton);
+    item.appendChild(tooltip);
+
+    if (assignedRoleKind !== "spy") {
+      tooltip.classList.add("is-hidden-action");
     }
 
     locationsList.appendChild(item);
@@ -1453,6 +1466,7 @@ function getCurrentUserName() {
 function resetGameLocalState() {
   assignedRoleText = "Waiting for role.";
   assignedRoleKind = null;
+  assignedLocation = null;
   normalAccusationUsed = false;
   pendingAccusationName = null;
   pendingBeliefUpdateKey = null;
