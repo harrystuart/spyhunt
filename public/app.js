@@ -8,7 +8,7 @@ const lobbyScreen = document.querySelector("#lobby-screen");
 const gameScreen = document.querySelector("#game-screen");
 
 const nameInput = document.querySelector("#name");
-const emailInput = document.querySelector("#email");
+const playerIdInput = document.querySelector("#player-id");
 const roomCodeInput = document.querySelector("#room-code");
 const createRoomButton = document.querySelector("#create-room");
 const joinRandomRoomButton = document.querySelector("#join-random-room");
@@ -126,7 +126,7 @@ createRoomButton.addEventListener("click", () => {
 
   socket.emit("create_room", {
     name: nameInput.value,
-    email: emailInput.value
+    playerId: playerIdInput.value
   });
 });
 
@@ -136,7 +136,7 @@ joinRandomRoomButton.addEventListener("click", () => {
 
   socket.emit("join_random_room", {
     name: nameInput.value,
-    email: emailInput.value
+    playerId: playerIdInput.value
   });
 });
 
@@ -147,7 +147,7 @@ joinRoomButton.addEventListener("click", () => {
   socket.emit("join_room", {
     code: roomCodeInput.value,
     name: nameInput.value,
-    email: emailInput.value
+    playerId: playerIdInput.value
   });
 });
 
@@ -301,7 +301,7 @@ nameInput.addEventListener("keydown", event => {
   }
 });
 
-emailInput.addEventListener("keydown", event => {
+playerIdInput.addEventListener("keydown", event => {
   if (event.key === "Enter") {
     createRoomButton.click();
   }

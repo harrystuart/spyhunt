@@ -30,13 +30,13 @@ app.use(express.static("public"));
 io.on("connection", socket => {
   console.log("connected", socket.id);
 
-  socket.on("create_room", ({ name, email }) => {
+  socket.on("create_room", ({ name, playerId }) => {
     if (socket.data.roomCode) {
       socket.emit("app_error", "You are already in a room");
       return;
     }
 
-    const playerError = validatePlayerInput(name, email);
+    const playerError = validatePlayerInput(name, playerId);
 
     if (playerError) {
       socket.emit("app_error", playerError);
@@ -44,7 +44,7 @@ io.on("connection", socket => {
     }
 
     const code = createUniqueRoomCode();
-    const player = createPlayer(socket.id, name, email);
+    const player = createPlayer(socket.id, name, playerId);
 
     rooms.set(code, {
       id: crypto.randomUUID(),
@@ -69,7 +69,7 @@ io.on("connection", socket => {
     console.log(rooms);
   });
 
-  socket.on("join_room", ({ code, name, email }) => {
+  socket.on("join_room", ({ code, name, playerId }) => {
     if (socket.data.roomCode) {
       socket.emit("app_error", "You are already in a room");
       return;
@@ -82,7 +82,7 @@ io.on("connection", socket => {
       return;
     }
 
-    const playerError = validatePlayerInput(name, email);
+    const playerError = validatePlayerInput(name, playerId);
 
     if (playerError) {
       socket.emit("app_error", playerError);
@@ -107,14 +107,14 @@ io.on("connection", socket => {
       return;
     }
 
-    const duplicatePlayerError = validateUniquePlayerInRoom(room, name, email);
+    const duplicatePlayerError = validateUniquePlayerInRoom(room, name, playerId);
 
     if (duplicatePlayerError) {
       socket.emit("app_error", duplicatePlayerError);
       return;
     }
 
-    const player = createPlayer(socket.id, name, email);
+    const player = createPlayer(socket.id, name, playerId);
 
     room.players.push(player);
     socket.data.roomCode = roomCode;
@@ -126,23 +126,23 @@ io.on("connection", socket => {
     console.log(rooms);
   });
 
-  socket.on("join_random_room", ({ name, email }) => {
+  socket.on("join_random_room", ({ name, playerId }) => {
     if (socket.data.roomCode) {
       socket.emit("app_error", "You are already in a room");
       return;
     }
 
-    const playerError = validatePlayerInput(name, email);
+    const playerError = validatePlayerInput(name, playerId);
 
     if (playerError) {
       socket.emit("app_error", playerError);
       return;
     }
 
-    const existingRoom = findAvailableRandomRoom(name, email);
+    const existingRoom = findAvailableRandomRoom(name, playerId);
 
     if (existingRoom) {
-      const player = createPlayer(socket.id, name, email);
+      const player = createPlayer(socket.id, name, playerId);
 
       existingRoom.players.push(player);
       socket.data.roomCode = existingRoom.code;
@@ -156,7 +156,7 @@ io.on("connection", socket => {
     }
 
     const code = createUniqueRoomCode();
-    const player = createPlayer(socket.id, name, email);
+    const player = createPlayer(socket.id, name, playerId);
 
     const room = {
       id: crypto.randomUUID(),
@@ -1278,7 +1278,7 @@ function resolveFinalAccusationsFailed(room) {
   });
 }
 
-function validatePlayerInput(name, email) {
+function validatePlayerInput(name, playerId) {
   if (typeof name !== "string") {
     return "Username is required";
   }
@@ -1293,14 +1293,14 @@ function validatePlayerInput(name, email) {
     return "Username must be 32 characters or fewer";
   }
 
-  if (email !== undefined && email !== null && typeof email !== "string") {
-    return "Email is invalid";
+  if (playerId !== undefined && playerId !== null && typeof playerId !== "string") {
+    return "Player Id is invalid";
   }
 
-  const cleanEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+  const cleanPlayerId = typeof playerId === "string" ? playerId.trim() : "";
 
-  if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
-    return "Email is invalid";
+  if (cleanPlayerId.length > 64) {
+    return "Player Id must be 64 characters or fewer";
   }
 }
 
@@ -1523,9 +1523,9 @@ function validateLocationGuessInput(location) {
   }
 }
 
-function validateUniquePlayerInRoom(room, name, email) {
+function validateUniquePlayerInRoom(room, name, playerId) {
   const cleanName = name.trim().toLowerCase();
-  const cleanEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+  const cleanPlayerId = typeof playerId === "string" ? playerId.trim() : "";
 
   const duplicateName = room.players.find(player => {
     return player.name.toLowerCase() === cleanName;
@@ -1535,24 +1535,24 @@ function validateUniquePlayerInRoom(room, name, email) {
     return "Username is already taken in this room";
   }
 
-  if (cleanEmail) {
-    const duplicateEmail = room.players.find(player => {
-      return player.email === cleanEmail;
+  if (cleanPlayerId) {
+    const duplicatePlayerId = room.players.find(player => {
+      return player.playerId === cleanPlayerId;
     });
 
-    if (duplicateEmail) {
-      return "Email is already in this room";
+    if (duplicatePlayerId) {
+      return "Player Id is already in this room";
     }
   }
 }
 
-function createPlayer(id, name, email) {
-  const cleanEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+function createPlayer(id, name, playerId) {
+  const cleanPlayerId = typeof playerId === "string" ? playerId.trim() : "";
 
   return {
     id,
     name: name.trim(),
-    email: cleanEmail || null,
+    playerId: cleanPlayerId || null,
     joinedAt: new Date().toISOString()
   };
 }
@@ -2042,7 +2042,7 @@ function createUniqueRoomCode() {
   throw new Error("Could not create a unique room code");
 }
 
-function findAvailableRandomRoom(name, email) {
+function findAvailableRandomRoom(name, playerId) {
   for (const room of rooms.values()) {
     if (room.kind !== ROOM_KIND_RANDOM) {
       continue;
@@ -2056,7 +2056,7 @@ function findAvailableRandomRoom(name, email) {
       continue;
     }
 
-    if (validateUniquePlayerInRoom(room, name, email)) {
+    if (validateUniquePlayerInRoom(room, name, playerId)) {
       continue;
     }
 
