@@ -78,6 +78,7 @@ io.on("connection", socket => {
       players: [player],
       playedPlayers: [],
       messages: [],
+      emotes: [],
       game: null,
       roundTimer: null
     });
@@ -218,6 +219,7 @@ io.on("connection", socket => {
       players: [player],
       playedPlayers: [],
       messages: [],
+      emotes: [],
       game: null,
       roundTimer: null
     };
@@ -883,6 +885,40 @@ io.on("connection", socket => {
     }
 
     throw new Error(`Unknown game phase ${room.game.phase}`);
+  });
+
+  socket.on("play_emote", ({ emoteId }) => {
+    if (!socket.data.roomCode) {
+      socket.emit("app_error", "You are not in a room");
+      return;
+    }
+
+    const roomCode = socket.data.roomCode;
+    const room = rooms.get(roomCode);
+
+    if (!room) {
+      throw new Error(`Socket ${socket.id} thinks it is in missing room ${roomCode}`);
+    }
+
+    const player = room.players.find(player => player.id === socket.id);
+
+    if (!player) {
+      throw new Error(`Socket ${socket.id} is missing from room ${roomCode}`);
+    }
+
+    const emote = {
+      playerId: socket.id,
+      emoteId,
+      playedAt: new Date().toISOString()
+    };
+
+    room.emotes.push(emote);
+
+    io.to(roomCode).emit("emote_played", {
+      playerName: player.name,
+      emoteId: emote.emoteId,
+      playedAt: emote.playedAt
+    });
   });
 
   socket.on("leave_room", () => {

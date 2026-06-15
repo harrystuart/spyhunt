@@ -6,6 +6,15 @@ const playerSignature = getOrCreatePlayerSignature();
 const MIN_PLAYERS = 3;
 const MAX_PLAYERS = 8;
 
+const EMOTES = [
+  { id: "smile", codepoint: "1f604", label: "Smile" },
+  { id: "thinking", codepoint: "1f914", label: "Thinking" },
+  { id: "shocked", codepoint: "1f631", label: "Shocked" },
+  { id: "magnifying-glass", codepoint: "1f50e", label: "Magnifying Glass" },
+  { id: "monster", codepoint: "1fac8", label: "Monster" },
+  { id: "disguise", codepoint: "1f978", label: "Disguise" }
+];
+
 const entryScreen = document.querySelector("#entry-screen");
 const lobbyScreen = document.querySelector("#lobby-screen");
 const gameScreen = document.querySelector("#game-screen");
@@ -199,6 +208,13 @@ chatMessageInput.addEventListener("keydown", event => {
 });
 
 gamePlayersList.addEventListener("click", event => {
+  const emoteOption = event.target.closest(".emote-option");
+
+  if (emoteOption) {
+    playEmote(emoteOption);
+    return;
+  }
+
   const accuseButton = event.target.closest(".accuse-button");
 
   if (!accuseButton || accuseButton.disabled) {
@@ -427,6 +443,10 @@ socket.on("app_error", message => {
   }
 
   showError(message);
+});
+
+socket.on("emote_played", emote => {
+  playEmoteAnimation(emote.playerName, emote.emoteId);
 });
 
 function sendChatMessage() {
@@ -965,13 +985,25 @@ function renderGamePlayers(room) {
   for (const player of sortPlayersForDisplay(room.players)) {
     const item = document.createElement("li");
     item.className = "player-row";
+    item.dataset.playerName = player.name;
 
     const name = document.createElement("span");
     name.className = "player-name-line";
     name.textContent = player.isHost ? `${player.name} · Host` : player.name;
     item.appendChild(name);
 
+    const actions = document.createElement("div");
+    actions.className = "player-actions";
+
+    if (isCurrentUser(player.name)) {
+      actions.appendChild(createEmotePicker());
+    }
+
     if (!isCurrentUser(player.name)) {
+      const emoteSlot = document.createElement("span");
+      emoteSlot.className = "emote-play-slot";
+      actions.appendChild(emoteSlot);
+
       const tooltip = document.createElement("span");
       tooltip.className = "tooltip-wrap player-action-slot";
       tooltip.dataset.tooltip = `Do you want to accuse ${player.name} of being the spy?`;
@@ -988,11 +1020,111 @@ function renderGamePlayers(room) {
 
       accuseButton.appendChild(icon);
       tooltip.appendChild(accuseButton);
-      item.appendChild(tooltip);
+      actions.appendChild(tooltip);
     }
 
+    item.appendChild(actions);
     gamePlayersList.appendChild(item);
   }
+}
+
+function createEmotePicker() {
+  const picker = document.createElement("span");
+  picker.className = "emote-picker";
+
+  picker.addEventListener("mouseleave", () => {
+    picker.classList.remove("is-closed");
+  });
+
+  const trigger = document.createElement("span");
+  trigger.className = "emote-button";
+  trigger.setAttribute("aria-label", "Choose emote");
+
+  const icon = document.createElement("span");
+  icon.className = "material-symbols-rounded";
+  icon.textContent = "mood";
+
+  trigger.appendChild(icon);
+  picker.appendChild(trigger);
+
+  const popover = document.createElement("div");
+  popover.className = "emote-popover";
+
+  for (const emote of EMOTES) {
+    const option = document.createElement("button");
+    option.type = "button";
+    option.className = "emote-option";
+    option.dataset.emoteId = emote.id;
+    option.setAttribute("aria-label", emote.label);
+
+    option.appendChild(createEmotePicture(emote));
+
+    popover.appendChild(option);
+  }
+
+  picker.appendChild(popover);
+
+  return picker;
+}
+
+function createEmotePicture(emote) {
+  const picture = document.createElement("picture");
+
+  picture.innerHTML = `
+    <source srcset="https://fonts.gstatic.com/s/e/notoemoji/latest/${emote.codepoint}/512.webp" type="image/webp">
+    <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/${emote.codepoint}/512.webp" alt="${emote.label}">
+  `;
+
+  return picture;
+}
+
+function playEmoteAnimation(playerName, emoteId) {
+  const emote = EMOTES.find(emote => emote.id === emoteId);
+  const row = findPlayerRow(playerName);
+
+  if (isCurrentUser(playerName)) {
+    const button = row.querySelector(".emote-button");
+
+    button.classList.add("is-playing");
+    button.innerHTML = "";
+    button.appendChild(createEmoteBurst(emote));
+
+    setTimeout(() => {
+      button.classList.remove("is-playing");
+      button.innerHTML = "";
+
+      const icon = document.createElement("span");
+      icon.className = "material-symbols-rounded";
+      icon.textContent = "mood";
+
+      button.appendChild(icon);
+    }, 4000);
+
+    return;
+  }
+
+  const slot = row.querySelector(".emote-play-slot");
+
+  slot.innerHTML = "";
+  slot.appendChild(createEmoteBurst(emote));
+
+  setTimeout(() => {
+    slot.innerHTML = "";
+  }, 4000);
+}
+
+function findPlayerRow(playerName) {
+  return Array.from(gamePlayersList.querySelectorAll(".player-row")).find(row => {
+    return namesMatch(row.dataset.playerName, playerName);
+  });
+}
+
+function createEmoteBurst(emote) {
+  const burst = document.createElement("span");
+  burst.className = "emote-burst";
+  burst.appendChild(createEmotePicture(emote));
+
+  return burst;
 }
 
 function renderAnswererOptions(room) {
@@ -1954,6 +2086,17 @@ function clearResearchConsent() {
   researchDataConsentInput.checked = false;
   noPiiConsentInput.checked = false;
   updateEntryButtons();
+}
+
+function playEmote(option) {
+  const picker = option.closest(".emote-picker");
+  const emoteId = option.dataset.emoteId;
+
+  picker.classList.add("is-closed");
+
+  socket.emit("play_emote", {
+    emoteId
+  });
 }
 
 showEntry();
