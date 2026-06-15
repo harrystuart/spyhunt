@@ -163,8 +163,6 @@
             ×
           </button>
 
-          <p class="mini-label">Rules</p>
-
           <div class="help-page-shell">
             <button id="help-previous-page" class="help-page-arrow" type="button" aria-label="Previous rules page">
               <span class="material-symbols-rounded" aria-hidden="true">chevron_left</span>
@@ -172,24 +170,142 @@
 
             <div class="help-pages">
               <article class="help-page is-active" data-help-page>
-                <h2 id="help-modal-title">Welcome to Spyhunt</h2>
-                <p class="modal-copy help-page-copy">
-                  Mock page one. One player is secretly the spy. Everyone else knows the hidden location.
-                </p>
+                <div class="help-page-content">
+                  <header class="help-page-header">
+                    <h2 id="help-modal-title">Welcome to Spyhunt</h2>
+                  </header>
+
+                  <div class="help-intro-grid">
+                    <section class="help-info-tile">
+                      <div class="help-tile-heading">
+                        <div class="help-tile-icon">
+                          <span class="material-symbols-rounded" aria-hidden="true">visibility</span>
+                        </div>
+                        <h3>What is Spyhunt?</h3>
+                      </div>
+                      <p>
+                        Spyhunt is a social deduction game inspired by the popular boardgame, Spyfall. We aim to collect data on how humans update belief about uncertain possibilities.
+                      </p>
+                    </section>
+
+                    <section class="help-info-tile">
+                      <div class="help-tile-heading">
+                        <div class="help-tile-icon">
+                          <span class="material-symbols-rounded" aria-hidden="true">extension</span>
+                        </div>
+                        <h3>What are the rules?</h3>
+                      </div>
+
+                      <p>
+                        One player is the Spy 
+                        and needs to try and guess the secret location. The other players are Agents, and need to find the Spy
+                        without revealing the location.
+                      </p>
+
+                      <br />
+                      <p>
+                        Each turn, a player will ask another player a question. The question can be yes/no, or open-ended. The other player must
+                        then provide an answer.
+                      </p>
+
+                      <br />
+                      <p>
+                        After every turn, all players will be asked to update their belief - this is private and for data collection only.
+                      </p>
+
+                      <br />
+                      <p>
+                        At any point, a player can accuse another of being the Spy, or the Spy can guess the location. If the Spy guesses correctly, or the wrong player is convicted, the Spy wins.
+                        If the Spy guesses incorrectly, or is convicted, the Agents win.
+                      </p>
+                    </section>
+
+                    <section class="help-info-tile">
+                      <div class="help-tile-heading">
+                        <div class="help-tile-icon">
+                          <span class="material-symbols-rounded" aria-hidden="true">group_add</span>
+                        </div>
+                        <h3>How do I join a game?</h3>
+                      </div>
+
+                      <p>
+                        Firstly, enter a fun username that will be visible to other players. If you are part of an event, enter your email so you can be identified.
+                      </p>
+                      <br />
+                      <p>
+                        You can either start your own game to play with friends, or join a random game with strangers. You can also join a specific game if you've been sent a room code.
+                      </p>
+                    </section>
+                  </div>
+                </div>
               </article>
 
               <article class="help-page" data-help-page>
-                <h2>Asking questions</h2>
-                <p class="modal-copy help-page-copy">
-                  Mock page two. On your turn, choose another player and ask a question.
-                </p>
-              </article>
+                <div class="help-page-content">
+                  <header class="help-page-header">
+                    <h2>FAQ</h2>
+                  </header>
 
-              <article class="help-page" data-help-page>
-                <h2>Accusations and guesses</h2>
-                <p class="modal-copy help-page-copy">
-                  Mock page three. Agents can accuse suspicious players. The spy can guess the hidden location.
-                </p>
+                  <div class="help-faq-grid">
+                    <section class="help-question-card" tabindex="0">
+                      <h3>Can the Spy ask questions?</h3>
+                      <p>
+                        Yes. The Spy takes turns like everyone else. They should ask and answer
+                        carefully to avoid giving themselves away.
+                      </p>
+                    </section>
+
+                    <section class="help-question-card" tabindex="0">
+                      <h3>Can the Spy accuse?</h3>
+                      <p>
+                        Yes. The Spy can accuse another player. This can be a smart strategy if the Spy seeks to win by convicting another player.
+                      </p>
+                    </section>
+
+                    <section class="help-question-card" tabindex="0">
+                      <h3>Can I ask open-ended questions?</h3>
+                      <p>
+                        Absolutely, get creative! Open-ended questions are often the most useful in revealing information. For example: "If you worked at this location, what would your company slogan be?".
+                      </p>
+                    </section>
+
+                    <section class="help-question-card" tabindex="0">
+                      <h3>How does accusation work?</h3>
+                      <p>
+                        A player accuses one other player of being the Spy. The other players cast their votes (agree or disagree) and the accused is only convicted if the votes are unanimous.
+                      </p>
+                    </section>
+
+                    <section class="help-question-card" tabindex="0">
+                      <h3>How many accusations do I get?</h3>
+                      <p>
+                        You can only accuse once, so accuse carefully. If the timer runs out, you can accuse one more time during Final Accusation.
+                      </p>
+                    </section>
+
+                    <section class="help-question-card" tabindex="0">
+                      <h3>What happens if the timer runs out?</h3>
+                      <p>
+                        The Spy can no longer guess the secret location and the Final Accusation phase begins, starting with the Host. 
+                        Each player gets one chance to accuse, and if no conviction is achieved, the Spy wins.
+                      </p>
+                    </section>
+
+                    <section class="help-question-card" tabindex="0">
+                      <h3>What determines the player that asks next?</h3>
+                      <p>
+                        The first player to ask a question is randomly decided. From then on, the player to whom the last question was asked gets to ask the next question.
+                      </p>
+                    </section>
+
+                    <section class="help-question-card" tabindex="0">
+                      <h3>Can I ask any player a question?</h3>
+                      <p>
+                        You can ask any player a question, as long as they didn't ask the previous question.
+                      </p>
+                    </section>
+                  </div>
+                </div>
               </article>
             </div>
 
