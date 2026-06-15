@@ -717,7 +717,22 @@ function renderLobbyControls(room) {
 
   startGameButton.disabled = !currentPlayerIsHost || !hasEnoughPlayers || roomIsOverLimit;
   leaveRoomButton.disabled = false;
-  lobbyWaitingText.hidden = currentPlayerIsHost;
+
+  if (!hasEnoughPlayers) {
+    lobbyWaitingText.hidden = false;
+    lobbyWaitingText.textContent =
+      `Not enough players. ${room.players.length}/${MIN_PLAYERS} joined.`;
+    return;
+  }
+
+  if (!currentPlayerIsHost) {
+    lobbyWaitingText.hidden = false;
+    lobbyWaitingText.textContent = "Waiting for host to start.";
+    return;
+  }
+
+  lobbyWaitingText.hidden = true;
+  lobbyWaitingText.textContent = "";
 }
 
 function renderGame(room) {
