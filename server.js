@@ -27,12 +27,27 @@ const rooms = new Map();
 
 app.use(express.static("public"));
 
+function validateResearchConsent(researchDataConsent, noPiiConsent) {
+  if (researchDataConsent !== true || noPiiConsent !== true) {
+    return "Both research consent boxes must be ticked before entering a lobby.";
+  }
+
+  return null;
+}
+
 io.on("connection", socket => {
   console.log("connected", socket.id);
 
-  socket.on("create_room", ({ name, playerId, playerSignature }) => {
+  socket.on("create_room", ({ name, playerId, playerSignature, researchDataConsent, noPiiConsent }) => {
     if (socket.data.roomCode) {
       socket.emit("app_error", "You are already in a room");
+      return;
+    }
+
+    const consentError = validateResearchConsent(researchDataConsent, noPiiConsent);
+
+    if (consentError) {
+      socket.emit("app_error", consentError);
       return;
     }
 
@@ -76,9 +91,16 @@ io.on("connection", socket => {
     console.log(rooms);
   });
 
-  socket.on("join_room", ({ code, name, playerId, playerSignature }) => {
+  socket.on("join_room", ({ code, name, playerId, playerSignature, researchDataConsent, noPiiConsent }) => {
     if (socket.data.roomCode) {
       socket.emit("app_error", "You are already in a room");
+      return;
+    }
+
+    const consentError = validateResearchConsent(researchDataConsent, noPiiConsent);
+
+    if (consentError) {
+      socket.emit("app_error", consentError);
       return;
     }
 
@@ -140,9 +162,16 @@ io.on("connection", socket => {
     console.log(rooms);
   });
 
-  socket.on("join_random_room", ({ name, playerId, playerSignature }) => {
+  socket.on("join_random_room", ({ name, playerId, playerSignature, researchDataConsent, noPiiConsent }) => {
     if (socket.data.roomCode) {
       socket.emit("app_error", "You are already in a room");
+      return;
+    }
+
+    const consentError = validateResearchConsent(researchDataConsent, noPiiConsent);
+
+    if (consentError) {
+      socket.emit("app_error", consentError);
       return;
     }
 
@@ -1301,17 +1330,17 @@ function resolveFinalAccusationsFailed(room) {
 
 function validatePlayerInput(name, playerId) {
   if (typeof name !== "string") {
-    return "Username is required";
+    return "Nickname is required";
   }
 
   const cleanName = name.trim();
 
   if (!cleanName) {
-    return "Username is required";
+    return "Nickname is required";
   }
 
   if (cleanName.length > 32) {
-    return "Username must be 32 characters or fewer";
+    return "Nickname must be 32 characters or fewer";
   }
 
   if (playerId !== undefined && playerId !== null && typeof playerId !== "string") {
@@ -1553,7 +1582,7 @@ function validateUniquePlayerInRoom(room, name, playerId) {
   });
 
   if (duplicateName) {
-    return "Username is already taken in this room";
+    return "Nickname is already taken in this room";
   }
 
   if (cleanPlayerId) {

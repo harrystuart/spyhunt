@@ -87,7 +87,7 @@ body::after {
 
 .card {
   width: 100%;
-  max-width: 440px;
+  max-width: 520px;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -1387,4 +1387,42 @@ select:disabled {
 
 .help-page-dot:hover {
   transform: scale(1.15);
+}
+
+.consent-section {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.consent-title {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.consent-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: flex-start;
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.consent-row input {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  padding: 0;
+  cursor: pointer;
 }

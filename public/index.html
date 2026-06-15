@@ -22,8 +22,8 @@
 
         <form class="room-form">
           <div class="field">
-            <label for="name">Name</label>
-            <input id="name" name="name" type="text" autocomplete="name" placeholder="Your name" />
+            <label for="name">Nickname</label>
+            <input id="name" type="text" autocomplete="name" placeholder="Choose a nickname" />
           </div>
 
           <div class="field">
@@ -35,6 +35,26 @@
               autocomplete="off"
               placeholder="Participant ID"
             />
+          </div>
+
+          <div class="consent-section" role="group" aria-labelledby="research-consent-title">
+            <p id="research-consent-title" class="consent-title">Research consent</p>
+
+            <label class="consent-row" for="research-data-consent">
+              <input id="research-data-consent" type="checkbox" autocomplete="off" />
+              <span>
+                I consent to my de-identified Spyhunt gameplay data, including interactions and messages,
+                being collected, analysed, and published in a public research dataset under a permissive license.
+                Identifiers such as my nickname, IP address, and room code will NOT be published.
+              </span>
+            </label>
+
+            <label class="consent-row" for="no-pii-consent">
+              <input id="no-pii-consent" type="checkbox" autocomplete="off" />
+              <span>
+                I agree NOT to enter personally identifying information during gameplay.
+              </span>
+            </label>
           </div>
 
           <div class="divider"></div>

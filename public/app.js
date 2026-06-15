@@ -48,7 +48,8 @@ const helpNextPageButton = document.querySelector("#help-next-page");
 const helpPages = Array.from(document.querySelectorAll("[data-help-page]"));
 const helpPageDots = document.querySelector("#help-page-dots");
 
-let helpPageIndex = 0;
+const researchDataConsentInput = document.querySelector("#research-data-consent");
+const noPiiConsentInput = document.querySelector("#no-pii-consent");
 
 let lobbyWaitingText = document.querySelector("#lobby-waiting-text");
 
@@ -77,6 +78,8 @@ let pendingVoteKey = null;
 let pendingSpyGuessLocation = null;
 let pendingGuessConfirmationLocation = null;
 let statusTimer = null;
+let helpPageIndex = 0;
+let entryIsBusy = false;
 
 const submittedBeliefUpdateKeys = new Set();
 const submittedVoteKeys = new Set();
@@ -102,6 +105,14 @@ socket.on("connect_error", () => {
 
 window.addEventListener("resize", scheduleHelpButtonPosition);
 window.addEventListener("load", scheduleHelpButtonPosition);
+
+researchDataConsentInput.addEventListener("change", () => {
+  updateEntryButtons();
+});
+
+noPiiConsentInput.addEventListener("change", () => {
+  updateEntryButtons();
+});
 
 helpButton.addEventListener("click", () => {
   openHelpModal();
@@ -130,7 +141,9 @@ createRoomButton.addEventListener("click", () => {
   socket.emit("create_room", {
     name: nameInput.value,
     playerId: playerIdInput.value,
-    playerSignature
+    playerSignature,
+    researchDataConsent: researchDataConsentInput.checked,
+    noPiiConsent: noPiiConsentInput.checked
   });
 });
 
@@ -141,7 +154,9 @@ joinRandomRoomButton.addEventListener("click", () => {
   socket.emit("join_random_room", {
     name: nameInput.value,
     playerId: playerIdInput.value,
-    playerSignature
+    playerSignature,
+    researchDataConsent: researchDataConsentInput.checked,
+    noPiiConsent: noPiiConsentInput.checked
   });
 });
 
@@ -153,7 +168,9 @@ joinRoomButton.addEventListener("click", () => {
     code: roomCodeInput.value,
     name: nameInput.value,
     playerId: playerIdInput.value,
-    playerSignature
+    playerSignature,
+    researchDataConsent: researchDataConsentInput.checked,
+    noPiiConsent: noPiiConsentInput.checked
   });
 });
 
@@ -370,6 +387,7 @@ socket.on("room_destroyed", ({ message }) => {
 
   setEntryBusy(false);
   setLobbyBusy(false);
+  clearResearchConsent();
   showEntry();
   showError(message || "Room destroyed.");
 });
@@ -383,6 +401,7 @@ socket.on("room_left", () => {
   clearStatus();
   setEntryBusy(false);
   setLobbyBusy(false);
+  clearResearchConsent();
   showEntry();
 });
 
@@ -1759,9 +1778,21 @@ function clearStatus() {
 }
 
 function setEntryBusy(isBusy) {
-  createRoomButton.disabled = isBusy;
-  joinRoomButton.disabled = isBusy;
-  joinRandomRoomButton.disabled = isBusy;
+  entryIsBusy = isBusy;
+  updateEntryButtons();
+}
+
+function updateEntryButtons() {
+  const hasConsent = hasRequiredResearchConsent();
+  const shouldDisable = entryIsBusy || !hasConsent;
+
+  createRoomButton.disabled = shouldDisable;
+  joinRoomButton.disabled = shouldDisable;
+  joinRandomRoomButton.disabled = shouldDisable;
+}
+
+function hasRequiredResearchConsent() {
+  return researchDataConsentInput.checked && noPiiConsentInput.checked;
 }
 
 function setLobbyBusy(isBusy) {
@@ -1919,5 +1950,12 @@ function getOrCreatePlayerSignature() {
   return newSignature;
 }
 
+function clearResearchConsent() {
+  researchDataConsentInput.checked = false;
+  noPiiConsentInput.checked = false;
+  updateEntryButtons();
+}
+
 showEntry();
 renderHelpPage();
+updateEntryButtons();
