@@ -1,6 +1,6 @@
 const socket = io();
 
-const PLAYER_SIGNATURE_STORAGE_KEY = "spyhunt.playerSignature";
+const PLAYER_SIGNATURE_STORAGE_KEY = "spyseek.playerSignature";
 const playerSignature = getOrCreatePlayerSignature();
 
 const MIN_PLAYERS = 4;
