@@ -346,6 +346,12 @@ playerIdInput.addEventListener("keydown", event => {
   }
 });
 
+answererSelect.addEventListener("change", () => {
+  if (latestRoom) {
+    renderChatControls(latestRoom);
+  }
+});
+
 socket.on("room_created", ({ code }) => {
   currentRoomCode = code;
   roomCodeInput.value = code;
@@ -451,6 +457,17 @@ socket.on("emote_played", emote => {
 
 function sendChatMessage() {
   if (sendChatMessageButton.disabled) {
+    return;
+  }
+
+  if (
+    latestRoom &&
+    latestRoom.status === "playing" &&
+    latestRoom.turn &&
+    latestRoom.turn.phase === "asking" &&
+    !answererSelect.value
+  ) {
+    showError("Choose who to ask first.");
     return;
   }
 
@@ -1133,6 +1150,13 @@ function renderAnswererOptions(room) {
 
   answererSelect.innerHTML = "";
 
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Choose who to ask";
+  placeholder.disabled = true;
+  placeholder.selected = true;
+  answererSelect.appendChild(placeholder);
+
   for (const player of sortPlayersAlphabetically(room.players)) {
     if (isCurrentUser(player.name)) {
       continue;
@@ -1149,11 +1173,13 @@ function renderAnswererOptions(room) {
   }
 
   const previousOptionStillExists = Array.from(answererSelect.options).some(option => {
-    return option.value === previousValue;
+    return option.value === previousValue && previousValue !== "";
   });
 
   if (previousOptionStillExists) {
     answererSelect.value = previousValue;
+  } else {
+    answererSelect.value = "";
   }
 }
 
@@ -1199,7 +1225,11 @@ function renderChatControls(room) {
     room.turn.phase === "answering" &&
     isCurrentUser(room.turn.currentAnswererName);
 
-  const hasEligibleAnswerer = answererSelect.options.length > 0;
+  const hasEligibleAnswerer = Array.from(answererSelect.options).some(option => {
+    return option.value !== "";
+  });
+
+  const hasChosenAnswerer = answererSelect.value !== "";
 
   chatControls.classList.toggle("is-answer-mode", canAnswer);
   chatControls.classList.toggle("is-discussion", canDiscuss);
@@ -1228,10 +1258,21 @@ function renderChatControls(room) {
   }
 
   answererSelect.disabled = !canAsk || !hasEligibleAnswerer;
-  chatMessageInput.disabled = (!canAsk && !canAnswer) || (canAsk && !hasEligibleAnswerer);
-  sendChatMessageButton.disabled = (!canAsk && !canAnswer) || (canAsk && !hasEligibleAnswerer);
 
-  if (canAsk && hasEligibleAnswerer) {
+  chatMessageInput.disabled =
+    (!canAsk && !canAnswer) ||
+    (canAsk && (!hasEligibleAnswerer || !hasChosenAnswerer));
+
+  sendChatMessageButton.disabled =
+    (!canAsk && !canAnswer) ||
+    (canAsk && (!hasEligibleAnswerer || !hasChosenAnswerer));
+
+  if (canAsk && hasEligibleAnswerer && !hasChosenAnswerer) {
+    chatMessageInput.placeholder = "Choose who to ask first";
+    return;
+  }
+
+  if (canAsk && hasEligibleAnswerer && hasChosenAnswerer) {
     chatMessageInput.placeholder = "Ask a question";
     return;
   }
