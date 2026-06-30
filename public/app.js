@@ -74,6 +74,7 @@ if (!lobbyWaitingText) {
 }
 
 const guessConfirmationModal = createGuessConfirmationModal();
+const roleRevealModal = createRoleRevealModal();
 
 let currentRoomCode = null;
 let latestRoom = null;
@@ -269,10 +270,17 @@ guessConfirmationModal.confirmButton.addEventListener("click", () => {
   confirmSpyGuess();
 });
 
+roleRevealModal.closeButton.addEventListener("click", closeRoleRevealModal);
+
+roleRevealModal.backdrop.addEventListener("click", closeRoleRevealModal);
+
+roleRevealModal.acknowledgeButton.addEventListener("click", closeRoleRevealModal);
+
 document.addEventListener("keydown", event => {
   if (event.key === "Escape") {
     closeGuessConfirmation();
     closeHelpModal();
+    closeRoleRevealModal();
   }
 });
 
@@ -390,8 +398,12 @@ socket.on("role_assigned", ({ role, location }) => {
 
   if (role === "spy") {
     assignedRoleText = "Spy: learn the secret location!";
+    roleRevealModal.title.textContent = "You are the spy!"
+    roleRevealModal.message.textContent = "You need to try and figure out the secret location without giving yourself away. Don't let the agents catch you! You can guess the location by clicking on the blue button next to the corresponding location name. Be careful, you can only guess once!";
   } else {
     assignedRoleText = "Agent: find the spy!";
+    roleRevealModal.title.textContent = "You are an agent!"
+    roleRevealModal.message.textContent = "You need to try and figure out who the spy is before they guess the secret location! You can accuse a player of being the spy the pressing the red button next to their name.";
   }
 
   renderRole();
@@ -399,6 +411,11 @@ socket.on("role_assigned", ({ role, location }) => {
   if (latestRoom) {
     renderRoom(latestRoom);
   }
+
+  // Show the role reveal modal
+  roleRevealModal.element.classList.remove("is-hidden");
+  roleRevealModal.element.setAttribute("aria-hidden", "false");
+  roleRevealModal.acknowledgeButton.focus();
 });
 
 socket.on("room_destroyed", ({ message }) => {
@@ -604,6 +621,11 @@ function closeGuessConfirmation() {
   pendingGuessConfirmationLocation = null;
   guessConfirmationModal.element.classList.add("is-hidden");
   guessConfirmationModal.element.setAttribute("aria-hidden", "true");
+}
+
+function closeRoleRevealModal() {
+  roleRevealModal.element.classList.add("is-hidden");
+  roleRevealModal.element.setAttribute("aria-hidden", "true");
 }
 
 function confirmSpyGuess() {
@@ -1928,6 +1950,48 @@ function createGuessConfirmationModal() {
     confirmButton: element.querySelector("#confirm-location-guess"),
     cancelButton: element.querySelector("#cancel-location-guess"),
     closeButton: element.querySelector("#close-location-guess")
+  };
+}
+
+function createRoleRevealModal() {
+  let element = document.querySelector("#role-reveal-modal");
+
+  if (element) {
+    return {
+      element,
+      backdrop: element.querySelector(".modal-backdrop"),
+      message: element.querySelector("#role-reveal-message"),
+      closeButton: element.querySelector("#close-role-reveal"),
+      acknowledgeButton: element.querySelector("#acknowledge-role")
+    };
+  }
+
+  element = document.createElement("div");
+  element.id = "role-reveal-modal";
+  element.className = "modal-overlay is-hidden";
+  element.setAttribute("aria-hidden", "true");
+
+  element.innerHTML = `
+    <div class="modal-backdrop"></div>
+    <section class="confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="role-reveal-title">
+      <button id="close-role-reveal" class="modal-close" type="button" aria-label="Close">×</button>
+      <h2 id="role-reveal-title"></h2>
+      <p id="role-reveal-message" class="modal-copy"></p>
+      <div class="modal-actions">
+        <button id="acknowledge-role" class="button button-primary" type="button">Got it!</button>
+      </div>
+    </section>
+  `;
+
+  document.body.appendChild(element);
+
+  return {
+    element,
+    backdrop: element.querySelector(".modal-backdrop"),
+    title: element.querySelector("#role-reveal-title"),
+    message: element.querySelector("#role-reveal-message"),
+    closeButton: element.querySelector("#close-role-reveal"),
+    acknowledgeButton: element.querySelector("#acknowledge-role")
   };
 }
 
