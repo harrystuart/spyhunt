@@ -398,11 +398,11 @@ socket.on("role_assigned", ({ role, location }) => {
 
   if (role === "spy") {
     assignedRoleText = "Spy: learn the secret location!";
-    roleRevealModal.title.textContent = "You are the spy!"
+    roleRevealModal.title.textContent = "You are the Spy!"
     roleRevealModal.message.textContent = "You need to try and figure out the secret location without giving yourself away. Don't let the agents catch you! You can guess the location by clicking on the blue button next to the corresponding location name. Be careful, you can only guess once!";
   } else {
     assignedRoleText = "Agent: find the spy!";
-    roleRevealModal.title.textContent = "You are an agent!"
+    roleRevealModal.title.textContent = "You are an Agent!"
     roleRevealModal.message.textContent = "You need to try and figure out who the spy is before they guess the secret location! You can accuse a player of being the spy the pressing the red button next to their name.";
   }
 
